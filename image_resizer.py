@@ -15,12 +15,6 @@ def get_exif(f):
     return exif_dict
 
 
-def is_directory(path):
-    if os.path.exists(path):
-        return os.path.isdir(path)
-    return False
-
-
 def get_image_name(image_filename, source_directory):
     ext = '.' + image_filename.split('.')[-1]
     try:
@@ -70,14 +64,13 @@ def resize_images_in_directory(source_dir, target_dir, width, height):
 
     for root, dirs, files in os.walk(source_dir, topdown=True):
         store_directory = root.replace(source_dir, target_dir)
+        for dir_name in dirs:
+            directory = os.path.join(store_directory, dir_name)
+            os.makedirs(directory, exist_ok=True)
         for file_name in files:
             # Ignore hidden directories
             if file_name[0] != '.':
                 resize_image(file_name, root, store_directory, width, height)            
-        for dir_name in dirs:
-            directory = os.path.join(store_directory, dir_name)
-            if not is_directory(target_dir):
-                os.mkdir(directory)
 
 
 def parse_args():
