@@ -25,7 +25,7 @@ def get_image_name(image_filename, source_directory):
         image_name = creation_date.replace(':', '-').replace(' ', '_')
     except:
         image_name = image_filename.split('.')[0]
-    return image_name + ext
+    return exif_dict, image_name + ext
 
 
 def get_image_new_size(original_size, width, height):
@@ -42,7 +42,7 @@ def get_image_new_size(original_size, width, height):
 
 
 def resize_image(image_filename, source_directory, store_directory, width, height):
-    image_name = get_image_name(image_filename, source_directory)
+    exif, image_name = get_image_name(image_filename, source_directory)
     saved_image = os.path.join(store_directory, image_name)
     if os.path.exists(saved_image):
         return
@@ -50,7 +50,16 @@ def resize_image(image_filename, source_directory, store_directory, width, heigh
     try:
         original_image = Image.open(path)
         size = get_image_new_size(original_image.size, width, height)
-        new_image= original_image.resize(size, Image.ANTIALIAS) # best down-sizing filter
+        orientation = exif.get('Orientation', 0)
+        if orientation == 3: 
+            original_image = original_image.rotate(180, expand=True)
+        elif orientation == 6: 
+            original_image = original_image.rotate(270, expand=True)
+            size = (size[1], size[0])
+        elif orientation == 8: 
+            original_image = original_image.rotate(90, expand=True)
+            size = (size[1], size[0])
+        new_image = original_image.resize(size, Image.ANTIALIAS) # best down-sizing filter
         new_image.save(saved_image)
         print('Saved file: {}'.format(saved_image))
     except Exception as e:
