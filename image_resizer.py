@@ -31,13 +31,19 @@ def get_image_name(image_filename, source_directory):
 def get_image_new_size(original_size, width, height):
     x, y = original_size
     if y > x:
-        width, height = height, width
-    if x > width:
-        y = max(y * width // x, 1)
-        x = width
-    if y > height:
-        x = max(x * height // y, 1)
-        y = height
+        if y > height:
+            x = max(x * height // y, 1)
+            y = height
+        elif x > width:
+            y = max(y * width // x, 1)
+            x = width
+    else:
+        if x > width:
+            y = max(y * width // x, 1)
+            x = width
+        elif y > height:
+            x = max(x * height // y, 1)
+            y = height
     return x, y
 
 
@@ -49,7 +55,10 @@ def resize_image(image_filename, source_directory, store_directory, width, heigh
     path = os.path.join(source_directory, image_filename)
     try:
         original_image = Image.open(path)
-        size = get_image_new_size(original_image.size, width, height)
+        if width is None or height is None:
+            size = original_image.size
+        else:
+            size = get_image_new_size(original_image.size, width, height)
         orientation = exif.get('Orientation', 0)
         if orientation == 3: 
             original_image = original_image.rotate(180, expand=True)
@@ -86,18 +95,32 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Resize and compress images in a directory.')
     parser.add_argument('source', help='directory containing images to compress')
     parser.add_argument('output', help=' directory to save new images too')
-    parser.add_argument('-s', '--size', default='2048x1536')
+    parser.add_argument('-s', '--size', help='resize to WIDTHxHEIGHT', default='2048x1536')
+    parser.add_argument('-n', '--noresize', help='do not resize images, just compress', default=False, action='store_true')
     return parser.parse_args()
 
 
 def parse_size(size):
-    w, h = size.split('x')
-    return int(w), int(h)
+    if size == '300dpiA4':
+        return 2480, 3508
+    elif size == '200dpiA4':
+        return 1654, 2339
+    elif size == '100dpiA4':
+        return 827, 1170
+    elif size == '72dpiA4':
+        return 596, 842
+    else:
+        w, h = size.split('x')
+        return int(w), int(h)
 
 
 if __name__ == '__main__':
     args = parse_args()
-    width, height = parse_size(args.size)
+    if args.noresize:
+        width = None
+        height = None
+    else:
+        width, height = parse_size(args.size)
     os.makedirs(args.output, exist_ok=True)
     resize_images_in_directory(args.source, args.output, width, height)
     
