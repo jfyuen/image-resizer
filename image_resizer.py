@@ -17,6 +17,7 @@ def get_exif(f):
 
 def get_image_name(image_filename, source_directory):
     ext = '.' + image_filename.split('.')[-1]
+    exif_dict = {}
     try:
         exif_dict = get_exif(source_directory + os.sep + image_filename)
         creation_date = exif_dict['DateTimeOriginal'][0]
@@ -30,20 +31,14 @@ def get_image_name(image_filename, source_directory):
 
 def get_image_new_size(original_size, width, height):
     x, y = original_size
-    if y > x:
-        if y > height:
-            x = max(x * height // y, 1)
-            y = height
-        elif x > width:
-            y = max(y * width // x, 1)
-            x = width
-    else:
-        if x > width:
-            y = max(y * width // x, 1)
-            x = width
-        elif y > height:
-            x = max(x * height // y, 1)
-            y = height
+    if x > y:
+        height, width = width, height
+    if x > width:
+        y = max(y * width // x, 1)
+        x = width
+    elif y > height:
+        x = max(x * height // y, 1)
+        y = height
     return x, y
 
 
