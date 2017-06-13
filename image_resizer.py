@@ -20,7 +20,7 @@ def get_image_name(image_filename, source_directory):
     exif_dict = {}
     try:
         exif_dict = get_exif(source_directory + os.sep + image_filename)
-        creation_date = exif_dict['DateTimeOriginal'][0]
+        creation_date = exif_dict['DateTimeOriginal']
         if creation_date == '0000:00:00 00:00:00':
             raise Exception('Wrong exif data for {}'.format(image_filename))
         image_name = creation_date.replace(':', '-').replace(' ', '_')
