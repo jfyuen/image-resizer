@@ -55,16 +55,18 @@ def resize_image(image_filename, source_directory, store_directory, width, heigh
         else:
             size = get_image_new_size(original_image.size, width, height)
         orientation = exif.get('Orientation', 0)
-        if orientation == 3: 
+        if orientation == 3:
             original_image = original_image.rotate(180, expand=True)
-        elif orientation == 6: 
+        elif orientation == 6:
             original_image = original_image.rotate(270, expand=True)
             size = (size[1], size[0])
-        elif orientation == 8: 
+        elif orientation == 8:
             original_image = original_image.rotate(90, expand=True)
             size = (size[1], size[0])
         new_image = original_image.resize(size, Image.ANTIALIAS) # best down-sizing filter
-        new_image.save(saved_image)
+
+        original_image.info["exif"]["Orientation"] = 0
+        new_image.save(saved_image, exif=original_image.info["exif"])
         print('Saved file: {}'.format(saved_image))
     except Exception as e:
         print('Problem converting image: {} in {}'.format(image_filename, source_directory))
@@ -83,7 +85,7 @@ def resize_images_in_directory(source_dir, target_dir, width, height):
         for file_name in files:
             # Ignore hidden directories
             if file_name[0] != '.':
-                resize_image(file_name, root, store_directory, width, height)            
+                resize_image(file_name, root, store_directory, width, height)
 
 
 def parse_args():
@@ -118,4 +120,4 @@ if __name__ == '__main__':
         width, height = parse_size(args.size)
     os.makedirs(args.output, exist_ok=True)
     resize_images_in_directory(args.source, args.output, width, height)
-    
+
