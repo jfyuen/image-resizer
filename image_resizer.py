@@ -65,8 +65,11 @@ def resize_image(image_filename, source_directory, store_directory, width, heigh
             size = (size[1], size[0])
         new_image = original_image.resize(size, Image.ANTIALIAS) # best down-sizing filter
 
-        original_image.info["exif"]["Orientation"] = 0
-        new_image.save(saved_image, exif=original_image.info["exif"])
+        if "exif" in original_image.info:
+            original_image.info["exif"]["Orientation"] = 0
+            new_image.save(saved_image, exif=original_image.info["exif"])
+        else:
+            new_image.save(saved_image)
         print('Saved file: {}'.format(saved_image))
     except Exception as e:
         print('Problem converting image: {} in {}'.format(image_filename, source_directory))
