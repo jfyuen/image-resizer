@@ -63,10 +63,8 @@ def resize_image(image_filename, source_directory, store_directory, width, heigh
         elif orientation == 8:
             original_image = original_image.rotate(90, expand=True)
             size = (size[1], size[0])
-        new_image = original_image.resize(size, Image.ANTIALIAS) # best down-sizing filter
-
+        new_image = original_image.resize(size, Image.LANCZOS) # best down-sizing filter
         if "exif" in original_image.info:
-            original_image.info["exif"]["Orientation"] = 0
             new_image.save(saved_image, exif=original_image.info["exif"])
         else:
             new_image.save(saved_image)
