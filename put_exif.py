@@ -1,14 +1,16 @@
 import sys
 import os
+import re
 import shutil
 import piexif
 
 
 def get_creation_date(filename):
-    if not ("_" in filename and "-" in filename):
+    match = re.match(r'^(\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2})', os.path.splitext(filename)[0])
+    if match is None:
         return "0000:00:00 00:00:00"
 
-    return filename.split('.')[0].replace("_", " ").replace("-", ":")
+    return match.group(1).replace("_", " ").replace("-", ":")
 
 
 def add_exif(image_filename, source_directory, store_directory):
