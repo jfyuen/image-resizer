@@ -29,12 +29,21 @@ def add_exif(image_filename, source_directory, store_directory):
 
 
 def addexif_images_in_directory(source_dir, target_dir):
+    source_dir = os.path.abspath(source_dir)
+    target_dir = os.path.abspath(target_dir)
     os.makedirs(target_dir, exist_ok=True)
-    if target_dir[-1] != os.sep:
-        target_dir += os.sep
 
     for root, dirs, files in os.walk(source_dir, topdown=True):
-        store_directory = root.replace(source_dir, target_dir)
+        dirs[:] = [
+            dir_name for dir_name in dirs
+            if os.path.abspath(os.path.join(root, dir_name)) != target_dir
+        ]
+        relative_root = os.path.relpath(root, source_dir)
+        if relative_root == '.':
+            store_directory = target_dir
+        else:
+            store_directory = os.path.join(target_dir, relative_root)
+        os.makedirs(store_directory, exist_ok=True)
         for dir_name in dirs:
             directory = os.path.join(store_directory, dir_name)
             os.makedirs(directory, exist_ok=True)
