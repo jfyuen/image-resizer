@@ -32,15 +32,11 @@ def get_image_name(image_filename, source_directory):
 
 def get_image_new_size(original_size, width, height):
     x, y = original_size
-    if x > y:
-        height, width = width, height
-    if x > width:
-        y = max(y * width // x, 1)
-        x = width
-    elif y > height:
-        x = max(x * height // y, 1)
-        y = height
-    return x, y
+    if x <= width and y <= height:
+        return x, y
+
+    scale = min(width / x, height / y)
+    return max(int(x * scale), 1), max(int(y * scale), 1)
 
 
 def resize_image(image_filename, source_directory, store_directory, width, height):
