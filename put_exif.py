@@ -29,6 +29,7 @@ def add_exif(image_filename, source_directory, store_directory):
 
 
 def addexif_images_in_directory(source_dir, target_dir):
+    os.makedirs(target_dir, exist_ok=True)
     if target_dir[-1] != os.sep:
         target_dir += os.sep
 
