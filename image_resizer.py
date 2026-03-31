@@ -2,6 +2,7 @@ import os
 import sys
 import argparse
 from PIL import Image
+from PIL import ImageOps
 from PIL.ExifTags import TAGS
 
 
@@ -40,29 +41,22 @@ def get_image_new_size(original_size, width, height):
 
 
 def resize_image(image_filename, source_directory, store_directory, width, height):
-    exif, image_name = get_image_name(image_filename, source_directory)
+    _, image_name = get_image_name(image_filename, source_directory)
     saved_image = os.path.join(store_directory, image_name)
     if os.path.exists(saved_image):
         return
     path = os.path.join(source_directory, image_filename)
     try:
         original_image = Image.open(path)
+        original_image = ImageOps.exif_transpose(original_image)
         if width is None or height is None:
             size = original_image.size
         else:
             size = get_image_new_size(original_image.size, width, height)
-        orientation = exif.get('Orientation', 0)
-        if orientation == 3:
-            original_image = original_image.rotate(180, expand=True)
-        elif orientation == 6:
-            original_image = original_image.rotate(270, expand=True)
-            size = (size[1], size[0])
-        elif orientation == 8:
-            original_image = original_image.rotate(90, expand=True)
-            size = (size[1], size[0])
         new_image = original_image.resize(size, Image.LANCZOS) # best down-sizing filter
-        if "exif" in original_image.info:
-            new_image.save(saved_image, exif=original_image.info["exif"])
+        image_exif = original_image.getexif()
+        if image_exif:
+            new_image.save(saved_image, exif=image_exif.tobytes())
         else:
             new_image.save(saved_image)
         print('Saved file: {}'.format(saved_image))
